@@ -11,17 +11,6 @@ This API integrates three external services:
 
 The chatbot analyzes weather data (temperature, conditions, humidity) and generates intelligent clothing recommendations. With Gemini AI integration, it can also answer specific questions about weather and provide personalized advice in a conversational manner.
 
-## Features
-
-- 🌍 **Global Location Support**: Works with any location worldwide
-- 🌤️ **Real-time Weather Data**: Gets current weather conditions
-- 👕 **Smart Recommendations**: Provides detailed clothing suggestions
-- 🤖 **Gemini AI Integration**: Conversational responses and personalized advice
-- 💬 **Question Answering**: Ask specific questions about weather and clothing
-- 🔧 **Robust Error Handling**: Handles API failures and invalid requests
-- 📚 **Interactive Documentation**: Auto-generated API docs with Swagger UI
-- 🚀 **Fast Performance**: Built with FastAPI for high performance
-
 ## API Architecture
 
 ### How It Works
