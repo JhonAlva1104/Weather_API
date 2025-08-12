@@ -29,43 +29,66 @@ async def chat(request: ChatRequest):
         # Get weather data
         weather_data = await WeatherService.get_weather_for_location(request.location)
         
-        # Generate clothing recommendations
-        recommendations = ClothingService.get_clothing_recommendations(
-            weather_data.temperature,
-            weather_data.weather_condition,
-            weather_data.humidity
-        )
-        general_advice = ClothingService.get_general_advice(
+        # Get clothing recommendations
+        clothing_recommendation = ClothingService.get_clothing_recommendations(
             weather_data.temperature,
             weather_data.weather_condition
         )
         
-        # Create clothing recommendation object
-        clothing_recommendation = ClothingRecommendation(
+        # Create ClothingRecommendation object
+        clothing_rec = ClothingRecommendation(
             location=weather_data.location,
             weather=weather_data,
-            recommendations=recommendations,
-            general_advice=general_advice
+            recommendations=clothing_recommendation,
+            general_advice=f"Based on the current weather in {weather_data.location}, here are my recommendations."
         )
         
-        # Get Gemini AI response
-        gemini_response = await GeminiService.get_gemini_response(
-            weather_data,
-            clothing_recommendation,
-            request.question
-        )
-        
-        message = f"Here are my clothing recommendations for {weather_data.location}! "
-        message += f"Current temperature is {weather_data.temperature}°C with {weather_data.weather_condition.lower()} conditions."
+        # Get Gemini AI response if question is provided
+        gemini_response = None
+        if request.question:
+            gemini_response = await GeminiService.get_gemini_response(
+                weather_data, clothing_rec, request.question
+            )
         
         return ChatbotResponse(
-            message=message,
-            clothing_recommendation=clothing_recommendation,
+            message="Weather and clothing recommendations retrieved successfully",
+            clothing_recommendation=clothing_rec,
             gemini_response=gemini_response
         )
         
-    except HTTPException:
-        raise
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        logger.error(f"Unexpected error in chat_enhanced: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        logger.error(f"Error in chat endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+
+@router.post("/natural", response_model=dict)
+async def natural_chat(request: dict):
+    """
+    Natural conversation endpoint with Gemini AI - no weather restrictions
+    """
+    try:
+        question = request.get("question", "")
+        if not question:
+            raise HTTPException(status_code=400, detail="Question is required")
+        
+        # Get natural response from Gemini without weather context
+        response = await GeminiService.get_natural_response(question)
+        
+        return {
+            "response": response,
+            "type": "natural_conversation"
+        }
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error in natural chat endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )

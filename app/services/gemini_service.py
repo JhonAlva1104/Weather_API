@@ -86,3 +86,36 @@ class GeminiService:
         except Exception as e:
             logger.error(f"Gemini API error: {str(e)}")
             return f"I'm experiencing some technical difficulties with the AI service. Here's the basic weather info: {weather_data.temperature}°C with {weather_data.weather_condition.lower()} conditions in {weather_data.location}."
+    
+    @staticmethod
+    async def get_natural_response(question: str) -> str:
+        """
+        Get a natural conversation response from Gemini AI without weather restrictions
+        """
+        try:
+            # Configure Gemini
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel('gemini-2.0-flash')
+            
+            # Create a more open prompt for natural conversation
+            prompt = f"""
+            You are a helpful and friendly AI assistant. You can discuss a wide variety of topics and provide helpful information, advice, and engage in natural conversation.
+            
+            Please respond to the following question or message in a helpful, informative, and conversational manner:
+            
+            Question: {question}
+            
+            Please provide a natural, helpful response.
+            """
+            
+            # Generate response
+            response = model.generate_content(prompt)
+            
+            if response and response.text:
+                return response.text.strip()
+            else:
+                return "I'm sorry, I couldn't generate a response to your question. Could you please try rephrasing it?"
+                
+        except Exception as e:
+            logger.error(f"Error calling Gemini API for natural conversation: {str(e)}")
+            return "I apologize, but I'm having trouble processing your request right now. Please try again later."
